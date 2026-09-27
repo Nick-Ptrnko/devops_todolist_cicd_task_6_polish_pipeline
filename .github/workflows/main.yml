@@ -7,9 +7,7 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
-  # Вимога 6: Можливість ручного запуску workflow
   workflow_dispatch:
-    # Вимога 7: Вхідні змінні для вибору артефакту з матриці
     inputs:
       artifact_choice:
         description: 'Оберіть артефакт із матриці для деплою'
@@ -22,13 +20,11 @@ on:
           - 'windows-latest-3.8'
           - 'windows-latest-3.9'
 
-# Вимога 11 & 12: Одночасний запуск тільки одного workflow на PR та скасування попередніх запусків
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  # Вимога 2: Назва репозиторію образів на DockerHub
   DockerImageName: todoapp
 
 jobs:
@@ -37,9 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Вимога 5: Matrix за типами ОС (Ubuntu та Windows)
         os: [ubuntu-latest, windows-latest]
-        # Вимога 4: Matrix за версіями Python (3.8, 3.9)
         python-version: ['3.8', '3.9']
     defaults:
       run:
@@ -76,7 +70,6 @@ jobs:
         run: |
           flake8 . --exit-zero --max-complexity=6
 
-      # Завантаження унікальних артефактів згідно з матрицею
       - name: Upload python artifacts
         uses: actions/upload-artifact@v4
         with:
