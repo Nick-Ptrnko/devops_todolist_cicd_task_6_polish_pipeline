@@ -12,7 +12,7 @@ on:
       helm-values-path:
         required: false
         type: string
-        default: './todoapp/values.yaml'
+        default: ''
       helm-release-name:
         required: false
         type: string
@@ -40,9 +40,22 @@ jobs:
 
       - name: Deploy helm
         run: |
+          VALUES_FLAG=""
+          VAL_PATH="${{ inputs.helm-values-path }}"
+          if [ -n "$VAL_PATH" ]; then
+            if [ -f "$VAL_PATH" ]; then
+              VALUES_FLAG="-f $VAL_PATH"
+            elif [ -f "helm-charts/$VAL_PATH" ]; then
+              VALUES_FLAG="-f helm-charts/$VAL_PATH"
+            elif [ -f "${VAL_PATH#./}" ]; then
+              VALUES_FLAG="-f ${VAL_PATH#./}"
+            elif [ -f "helm-charts/${VAL_PATH#./}" ]; then
+              VALUES_FLAG="-f helm-charts/${VAL_PATH#./}"
+            fi
+          fi
+
           helm upgrade --install --wait --timeout 500s --debug \
-            ${{ inputs.helm-release-name }} ./todoapp-*.tgz \
-            -f ${{ inputs.helm-values-path }}
+            ${{ inputs.helm-release-name }} ./todoapp-*.tgz $VALUES_FLAG
 
       - name: Debug Kubernetes Pods on Failure
         if: failure()
