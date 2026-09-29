@@ -18,6 +18,9 @@ on:
         type: string
         default: 'todoapp'
 
+env:
+  DockerImageName: ${{ secrets.DOCKERHUB_USERNAME }}/todoapp
+
 jobs:
   deployment:
     name: Deploy to ${{ inputs.environment }}
@@ -55,7 +58,9 @@ jobs:
           fi
 
           helm upgrade --install --wait --timeout 500s --debug \
-            ${{ inputs.helm-release-name }} ./todoapp-*.tgz $VALUES_FLAG
+            ${{ inputs.helm-release-name }} ./todoapp-*.tgz $VALUES_FLAG \
+            --set image.repository=${{ env.DockerImageName }} \
+            --set image.tag=${{ inputs.version }}
 
       - name: Debug Kubernetes Pods on Failure
         if: failure()
